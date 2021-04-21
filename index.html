@@ -12,7 +12,7 @@
 
     <div>
         <label>AlphaVantage API Key:</label>
-        <input type="text" name="api-key" id="my-api-key" placeholder="demo" value="demo">
+        <input type="text" name="api-key" id="my-api-key" placeholder="demo" value="G2P3CY0DEL4T2JZ8">
         <br>
 
         <label>Stock:</label>
@@ -50,11 +50,52 @@
         // ... 5) overwrite the HTML display values (symbol, latest close)
         // ... 6) make a dataviz
         //
+        var symbol, apiKey, dates, closingPrices;
+        var inputApiKey = document.getElementById("my-api-key");
+        var inputSelect = document.getElementById("my-stock-selector");
+        document.getElementById("my-submit-btn").onclick = function() {
+            symbol = inputSelect.value;
+            document.getElementById("display-stock-symbol").innerHTML = symbol;
+            apiKey = inputApiKey.value;
+            var requestUrl = "https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol=" + symbol + "&apikey=" + apiKey
+            console.log("REQUEST URL:", requestUrl);
+            fetch(requestUrl)
+                .then(response => {
+                    console.log("RESPONSE", response)
+                    return response.json()
+                })
+                .then(data => {
+                    //console.log("DATA", data) // this is the data you're looking for
+                    dates = Object.keys(data["Time Series (Daily)"]);
+                    var priceData = Object.values(data["Time Series (Daily)"]);
+                    closingPrices = priceData.map(x => x["4. close"]);
+                    //console.log(closingPrices);
+                    document.getElementById("display-latest-closing-price").innerHTML = closingPrices[0];
+                    var trace1 = {
+                        x: dates,
+                        y: closingPrices,
+                        mode: 'lines'
+                    };                   
+
+                    var data = [ trace1 ];
+
+                    var layout = {
+                        title:'Closing prices of ' + symbol
+                    };
+
+                    Plotly.newPlot('dataviz-container', data, layout);
+                })
+                .catch(err => {
+                    console.error("FETCH ERR", err)
+                })
+
+        };
+        
 
         console.log("TODO: RESPOND TO BUTTON CLICKS AND CAPTURE FORM INPUTS")
 
-        var apiKey = "TODO"
-        var symbol = "TODO"
+        //var apiKey = "TODO"
+        //var symbol = "TODO"
         var requestUrl = "https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol=" + symbol + "&apikey=" + apiKey
         console.log("REQUEST URL:", requestUrl)
 
